@@ -1,0 +1,22 @@
+_target_: src.models.graphsplinenets.TimeSplineNets
+
+sequence_length: 10
+dim: 2
+
+model_cfg:
+  encoder:
+    _target_: src.models.components.mlp.MLP
+    input_dim: 3
+    output_dim: 8
+  decoder:
+    _target_: src.models.components.mlp.MLP
+    input_dim: 8
+    output_dim: 1
+  node_update:
+    _target_: src.models.components.mlp.MLP
+    input_dim: 9
+    output_dim: 8
+  edge_update:
+    _target_: src.models.components.mlp.MLP
+    input_dim: 17
+    output_dim: 1

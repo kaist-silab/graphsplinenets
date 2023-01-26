@@ -1,0 +1,25 @@
+defaults:
+  - model_checkpoint.yaml
+#  - early_stopping.yaml
+  - model_summary.yaml
+  - rich_progress_bar.yaml
+  - checkpoint_upload.yaml
+  # - code_upload.yaml # disable for now, need to set paths
+  - _self_
+
+model_checkpoint:
+  dirpath: ${paths.output_dir}/checkpoints
+  filename: "epoch_{epoch:03d}"
+  mode: "min"
+  save_last: True
+  auto_insert_metric_name: False
+
+early_stopping:
+  patience: 100
+  mode: "min"
+
+model_summary:
+  max_depth: -1
+
+wandb_artifact:
+  wandb_run_path: null

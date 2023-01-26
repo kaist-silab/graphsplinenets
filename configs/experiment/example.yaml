@@ -1,0 +1,30 @@
+# @package _global_
+
+# to execute this experiment run:
+# python run.py experiment=example
+
+defaults:
+  - override /datamodule: gaussian2dsequence
+  - override /model: timesplinenet
+  - override /callbacks: default
+  - override /trainer: default
+
+
+# all parameters below will be merged with parameters from default configurations set above
+# this allows you to overwrite only specified parameters
+
+tags: ["graphsplinenets", "simple"]
+
+datamodule:
+  sequence_length: 13
+  batch_size: 1
+  num_workers: 1
+
+trainer:
+  max_epochs: 2
+  detect_anomaly: True
+  accelerator: cpu
+  devices: 1
+
+
+logger: null # use for debugging, not to call wandb

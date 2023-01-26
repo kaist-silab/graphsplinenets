@@ -1,0 +1,4 @@
+_target_: src.datamodules.pde.Gaussian2DSequence
+data_dir: ${paths.data_dir}gaussian/gaussian_8_mesh.bin
+batch_size: 16
+num_workers: 10
