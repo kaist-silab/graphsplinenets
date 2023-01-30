@@ -488,21 +488,21 @@ class TimeSpaceSplineNets(BaseGNN):
         px_r1 = px_l0
         px_r2 = px_l1
 
-        base_xl0 = (dx + 2 * (px_l1 - x)) * (x - px_l0) ** 2 / dx ** 3
-        base_xr0 = (dx + 2 * (x - px_r1)) * (px_r2 - x) ** 2 / dx ** 3
-        base_xl1 = (x - px_l1) * (x - px_l0) ** 2 / dx ** 2
-        base_xr1 = (x - px_r1) * (px_r2 - x) ** 2 / dx ** 2
+        base_xl0 = (dx + 2 * (px_l1 - x)) * (x - px_l0) ** 2 / dx**3
+        base_xr0 = (dx + 2 * (x - px_r1)) * (px_r2 - x) ** 2 / dx**3
+        base_xl1 = (x - px_l1) * (x - px_l0) ** 2 / dx**2
+        base_xr1 = (x - px_r1) * (px_r2 - x) ** 2 / dx**2
 
         base_start = torch.cat(
             (
-                x[:split_x] * (sx[1] - x[:split_x]) ** 2 / dx ** 2,
+                x[:split_x] * (sx[1] - x[:split_x]) ** 2 / dx**2,
                 torch.zeros(nx_sim - split_x),
             )
         )
         base_end = torch.cat(
             (
                 torch.zeros(nx_sim - split_x),
-                (x[-split_x:] - sx[-1]) * (x[-split_x:] - sx[-2]) ** 2 / dx ** 2,
+                (x[-split_x:] - sx[-1]) * (x[-split_x:] - sx[-2]) ** 2 / dx**2,
             )
         )
         base_list = [base_start]

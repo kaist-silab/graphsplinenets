@@ -437,7 +437,7 @@ class MeshConfig:
     seed: int
 
     def random_state(self):
-        return np.random.RandomState(int(self.seed) % 2 ** 32)
+        return np.random.RandomState(int(self.seed) % 2**32)
 
     def epsilon_radians(self):
         return self.epsilon * np.pi / 180
