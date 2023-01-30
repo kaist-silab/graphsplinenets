@@ -65,7 +65,9 @@ class UploadCodeAsArtifact(Callback):
             # get .git folder
             # https://alexwlchan.net/2020/11/a-python-function-to-ignore-a-path-with-git-info-exclude/
             git_dir_path = Path(
-                subprocess.check_output(["git", "rev-parse", "--git-dir"]).strip().decode("utf8")
+                subprocess.check_output(["git", "rev-parse", "--git-dir"])
+                .strip()
+                .decode("utf8")
             ).resolve()
 
             for path in Path(self.code_dir).resolve().rglob("*"):
@@ -75,7 +77,10 @@ class UploadCodeAsArtifact(Callback):
                     and not str(path).startswith(str(git_dir_path))  # noqa: W503
                     # ignore files ignored by git
                     and (  # noqa: W503
-                        subprocess.run(["git", "check-ignore", "-q", str(path)]).returncode == 1
+                        subprocess.run(
+                            ["git", "check-ignore", "-q", str(path)]
+                        ).returncode
+                        == 1
                     )
                 ):
                     code.add_file(str(path), name=str(path.relative_to(self.code_dir)))
@@ -113,17 +118,15 @@ class UploadCheckpointsAsArtifact(Callback):
                     ckpts.add_file(str(path))
 
             experiment.log_artifact(ckpts)
-        
 
 
-
-#--------------------------------------------
+# --------------------------------------------
 
 
 class _WandbArtifactCallback(Callback):
     # From Junyoung; we shouldnt need this code anymore, leaving for legacy
-    
-    def __init__(self, wandb_run_path, save_top_K: int, mode: str = 'min', **kwargs):
+
+    def __init__(self, wandb_run_path, save_top_K: int, mode: str = "min", **kwargs):
         self.run_path = wandb_run_path
         self.run = wandb.Api().run(self.run_path)
         self.save_top_K = save_top_K
@@ -132,18 +135,22 @@ class _WandbArtifactCallback(Callback):
     def on_validation_end(self, trainer, pl_module):
         artifacts = self.run.logged_artifacts()
         if len(artifacts) > self.save_top_K:
-            scores = [artf.metadata['score'] for artf in artifacts]
+            scores = [artf.metadata["score"] for artf in artifacts]
 
-            if self.mode == 'min':
-                threshold = artifacts[np.argsort(scores)[:self.save_top_K][-1]].metadata['score']
+            if self.mode == "min":
+                threshold = artifacts[
+                    np.argsort(scores)[: self.save_top_K][-1]
+                ].metadata["score"]
             else:
-                threshold = artifacts[np.argsort(scores)[::-1][:self.save_top_K][-1]].metadata['score']
+                threshold = artifacts[
+                    np.argsort(scores)[::-1][: self.save_top_K][-1]
+                ].metadata["score"]
 
             for artifact in artifacts:
-                if self.mode == 'min':
-                    delete_cond = artifact.metadata['score'] > threshold
+                if self.mode == "min":
+                    delete_cond = artifact.metadata["score"] > threshold
                 else:
-                    delete_cond = artifact.metadata['score'] < threshold
+                    delete_cond = artifact.metadata["score"] < threshold
 
                 if delete_cond:
                     artifact.delete()

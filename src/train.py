@@ -10,7 +10,13 @@ from omegaconf import DictConfig, OmegaConf
 from src.utils import utils, instantiate_callbacks, instantiate_loggers, pylogger
 
 import pytorch_lightning as pl
-from pytorch_lightning import Trainer, seed_everything, LightningModule, LightningDataModule, Callback
+from pytorch_lightning import (
+    Trainer,
+    seed_everything,
+    LightningModule,
+    LightningDataModule,
+    Callback,
+)
 from pytorch_lightning.loggers import LightningLoggerBase
 
 log = pylogger.get_pylogger(__name__)
@@ -21,7 +27,7 @@ def main(cfg: DictConfig) -> float:
 
     # We want to add fields to config so need to call OmegaConf.set_struct
     OmegaConf.set_struct(cfg, False)
-    
+
     # Set seed for random number generators in pytorch, numpy and python.random
     if cfg.seed is not None:
         seed_everything(cfg.seed, workers=True)
@@ -35,7 +41,9 @@ def main(cfg: DictConfig) -> float:
 
     # _recursive_ set to False does not instantiate nested objects, so we can dynamically modify the model and do it inside the LightningModule
     log.info(f"Instantiating model <{cfg.model._target_}>")
-    model: LightningModule = hydra.utils.instantiate(cfg.model, cfg=cfg, _recursive_=False)
+    model: LightningModule = hydra.utils.instantiate(
+        cfg.model, cfg=cfg, _recursive_=False
+    )
 
     log.info("Instantiating callbacks...")
     callbacks: List[Callback] = utils.instantiate_callbacks(cfg.get("callbacks"))
@@ -46,26 +54,28 @@ def main(cfg: DictConfig) -> float:
     # TODO: give a look at this part, may not be totally correct
     # https://github.com/ashleve/lightning-hydra-template/blob/main/src/train.py
     ckpt_cfg = {}
-    if cfg.get('resume'):
+    if cfg.get("resume"):
         try:
             checkpoint_path = Path(cfg.callbacks.model_checkpoint.dirpath)
             if checkpoint_path.is_dir():
-                checkpoint_path /= 'last.ckpt'
+                checkpoint_path /= "last.ckpt"
             # DeepSpeed's checkpoint is a directory, not a file
             if checkpoint_path.is_file() or checkpoint_path.is_dir():
-                ckpt_cfg = {'ckpt_path': str(checkpoint_path)}
+                ckpt_cfg = {"ckpt_path": str(checkpoint_path)}
             else:
-                log.info(f'Checkpoint file {str(checkpoint_path)} not found. Will start training from scratch')
+                log.info(
+                    f"Checkpoint file {str(checkpoint_path)} not found. Will start training from scratch"
+                )
         except KeyError:
             pass
 
     # Configure ddp automatically
-    n_devices = cfg.trainer.get('devices', 1)
+    n_devices = cfg.trainer.get("devices", 1)
     if isinstance(n_devices, Sequence):  # trainer.devices could be [1, 3] for example
         n_devices = len(n_devices)
-    if n_devices > 1 and cfg.trainer.get('strategy', None) is None:
+    if n_devices > 1 and cfg.trainer.get("strategy", None) is None:
         cfg.trainer.strategy = dict(
-            _target_='pytorch_lightning.strategies.DDPStrategy',
+            _target_="pytorch_lightning.strategies.DDPStrategy",
             find_unused_parameters=False,
             gradient_as_bucket_view=False,
             # https://pytorch-lightning.readthedocs.io/en/stable/advanced/advanced_gpu.html#ddp-optimizations
@@ -95,7 +105,7 @@ def main(cfg: DictConfig) -> float:
 
     log.info("Training finished! Testing...")
     if cfg.get("logger", None) is not None:
-        trainer_kwargs = {'ckpt_path': cfg.trainer.get('testing_ckpt_path', 'best')}
+        trainer_kwargs = {"ckpt_path": cfg.trainer.get("testing_ckpt_path", "best")}
     else:
         trainer_kwargs = {}
     trainer.test(model, datamodule=datamodule, **trainer_kwargs)

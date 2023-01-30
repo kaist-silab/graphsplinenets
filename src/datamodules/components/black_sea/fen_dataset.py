@@ -16,12 +16,16 @@ from scipy.spatial import Delaunay
 from torch.utils.data import DataLoader, Dataset, Sampler
 from torchtyping import TensorType
 
-from src.datamodules.components.black_sea.utils import DomainInfo, PeriodicEncoder, Standardizer, STBatch
+from src.datamodules.components.black_sea.utils import (
+    DomainInfo,
+    PeriodicEncoder,
+    Standardizer,
+    STBatch,
+)
 from src.datamodules.components.black_sea.utils import CellPredicate, Domain
 from src.datamodules.components.black_sea.utils import MeshConfig, sample_mesh
 
 log = logging.getLogger("fen.black_sea")
-
 
 
 MOTUCLIENT_INSTRUCTIONS = """

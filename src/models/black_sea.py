@@ -16,9 +16,9 @@ log = pylogger.get_pylogger(__name__)
 
 
 class SeqGNN(BaseGNN):
-    ''' GNN with Sequence input '''
+    """GNN with Sequence input"""
 
-    default_input_feats = ['feat', 'x', 'y', 'time', 'mask']
+    default_input_feats = ["feat", "x", "y", "time", "mask"]
 
     def __init__(self, sequence_length, input_feats=None, **kwargs):
         super().__init__(**kwargs)
@@ -33,60 +33,66 @@ class SeqGNN(BaseGNN):
         enc_n_feat = self.encoder(encoder_data)
 
         # Softmax Encoder Feature
-        softmax_n_feat = self.softmax(g, enc_n_feat, g.edata['dist'])
+        softmax_n_feat = self.softmax(g, enc_n_feat, g.edata["dist"])
 
         # Message Passing
-        g.ndata['h'] = softmax_n_feat
-        g.edata['h'] = g.edata['dist'] # NOTE: was feat
+        g.ndata["h"] = softmax_n_feat
+        g.edata["h"] = g.edata["dist"]  # NOTE: was feat
 
         g.apply_edges(func=self.edge_update_func)
-        g.pull(g.nodes(), message_func=dgl.function.copy_e('h', 'm'), reduce_func=dgl.function.sum('m', 'agg_m'))
+        g.pull(
+            g.nodes(),
+            message_func=dgl.function.copy_e("h", "m"),
+            reduce_func=dgl.function.sum("m", "agg_m"),
+        )
         g.apply_nodes(func=self.node_update_func)
 
         # Softmax Message Passing Features
-        softmax_node_feature = self.softmax(g, g.ndata['h'], g.edata['dist'])
+        softmax_node_feature = self.softmax(g, g.ndata["h"], g.edata["dist"])
 
         # Decoder
         decode_node_feature = self.decoder(softmax_node_feature)
 
-        if 'mask' in self.in_feats:
-            decode_node_feature = decode_node_feature * (1-g.ndata['mask'][:, None]) # 1 = invalid, we want to multiply by 0
+        if "mask" in self.in_feats:
+            decode_node_feature = decode_node_feature * (
+                1 - g.ndata["mask"][:, None]
+            )  # 1 = invalid, we want to multiply by 0
 
         # (Important) Delete temp features
-        _ = g.ndata.pop('h')
-        _ = g.ndata.pop('agg_m')
-        _ = g.ndata.pop('sum_m')
-        _ = g.edata.pop('h')
-        _ = g.edata.pop('w')
-        _ = g.edata.pop('wh')
+        _ = g.ndata.pop("h")
+        _ = g.ndata.pop("agg_m")
+        _ = g.ndata.pop("sum_m")
+        _ = g.edata.pop("h")
+        _ = g.edata.pop("w")
+        _ = g.edata.pop("wh")
 
         return decode_node_feature
 
-    def training_step(self, batch, batch_nb): 
-        '''
+    def training_step(self, batch, batch_nb):
+        """
         Args:
             batch <list of list> [batch_size, sequence_length]: mostly the batch_size
-                will be set to 1, so the input is a sequence of graph. More details 
+                will be set to 1, so the input is a sequence of graph. More details
                 please refer to data module class.
-        '''
+        """
         loss = torch.tensor(0, dtype=torch.float32)
         inp_graph = batch[0][0]
         out_graph_list = [inp_graph]
-        mask = (1 - inp_graph.ndata['mask'][None]) if 'mask' in self.in_feats else None
+        mask = (1 - inp_graph.ndata["mask"][None]) if "mask" in self.in_feats else None
 
         gt = []
-        node_feat = [inp_graph.ndata['feat']]
+        node_feat = [inp_graph.ndata["feat"]]
 
         # Collect ground truth
         for i in range(self.sequence_length):
-            gt.append(batch[0][i].ndata['feat'])
+            gt.append(batch[0][i].ndata["feat"])
         gt = torch.stack(gt)
 
         # Sequence rollout
-        for i in range(self.sequence_length-1):
+        for i in range(self.sequence_length - 1):
             inp_graph = batch[0][i].clone()
-            inp_graph.ndata['feat'] = node_feat[-1].clone().detach()
-            out_feat = torch.squeeze(self(inp_graph))[:,-1,:]
+            inp_graph.ndata["feat"] = node_feat[-1].clone().detach()
+            out_feat = torch.squeeze(self(inp_graph))[:, -1, :]
             del inp_graph
             node_feat.append(out_feat)
 
@@ -101,34 +107,37 @@ class SeqGNN(BaseGNN):
         self.collection.append(loss.item())
         return loss
 
-
     def training_epoch_end(self, epoch_output):
-        self.log('train/loss', sum(self.collection)/len(self.collection), prog_bar=True)
+        self.log(
+            "train/loss", sum(self.collection) / len(self.collection), prog_bar=True
+        )
         self.collection = []
 
     def validation_step(self, batch, batch_idx):
-        '''
+        """
         Args:
             batch <list of list> [batch_size, sequence_length]: mostly the batch_size
-                will be set to 1, so the input is a sequence of graph. More details 
+                will be set to 1, so the input is a sequence of graph. More details
                 please refer to data module class.
-        '''
+        """
         loss = torch.tensor(0, dtype=torch.float32)
         inp_graph = batch[0][0]
         gt = []
-        mask = (1 - inp_graph.ndata['mask'][None]) if 'mask' in self.in_feats else None
-        node_feat = [inp_graph.ndata['feat']]
+        mask = (1 - inp_graph.ndata["mask"][None]) if "mask" in self.in_feats else None
+        node_feat = [inp_graph.ndata["feat"]]
 
         # Collect ground truth
         for i in range(self.sequence_length):
-            gt.append(batch[0][i].ndata['feat'])
+            gt.append(batch[0][i].ndata["feat"])
         gt = torch.stack(gt)
 
         # Sequence rollout
-        for i in range(self.sequence_length-1):
+        for i in range(self.sequence_length - 1):
             inp_graph = batch[0][i].clone()
-            inp_graph.ndata['feat'] = node_feat[-1].clone().detach()
-            out_feat = torch.squeeze(self(inp_graph))[:, -1, :] # only last state in time
+            inp_graph.ndata["feat"] = node_feat[-1].clone().detach()
+            out_feat = torch.squeeze(self(inp_graph))[
+                :, -1, :
+            ]  # only last state in time
             del inp_graph
             node_feat.append(out_feat)
 
@@ -142,29 +151,37 @@ class SeqGNN(BaseGNN):
         self.val_collection.append(loss.item())
 
     def validation_step_end(self, validation_step_output):
-        self.log('val/loss', sum(self.val_collection)/len(self.val_collection), prog_bar=False, batch_size=1)
+        self.log(
+            "val/loss",
+            sum(self.val_collection) / len(self.val_collection),
+            prog_bar=False,
+            batch_size=1,
+        )
         self.val_collection = []
 
 
-
 class TimeSplineNets(BaseGNN):
-    ''' SplineGraphNets with only time oriented collocation'''
+    """SplineGraphNets with only time oriented collocation"""
 
-    default_input_feats = ['feat', 'x', 'y', 'time', 'mask']
+    default_input_feats = ["feat", "x", "y", "time", "mask"]
 
-    def __init__(self, sequence_length, dim, input_feats=None ,**kwargs):
+    def __init__(self, sequence_length, dim, input_feats=None, **kwargs):
         super().__init__(**kwargs)
-        
+
         self.in_feats = input_feats if input_feats else self.default_input_feats
         self.collection = []
         self.val_collection = []
 
         # Setup OSC1d
         self.sequence_length = sequence_length
-        self.x = torch.tensor(np.linspace(0, 1, sequence_length, endpoint=True), dtype=torch.float32)
+        self.x = torch.tensor(
+            np.linspace(0, 1, sequence_length, endpoint=True), dtype=torch.float32
+        )
         self.dim = dim
         self.p = torch.tensor([0, 1])
-        self.c = torch.tensor(np.linspace(0, 1, dim+1, endpoint=True)[1:-1], dtype=torch.float32)
+        self.c = torch.tensor(
+            np.linspace(0, 1, dim + 1, endpoint=True)[1:-1], dtype=torch.float32
+        )
 
     def forward(self, g):
         # Encoder
@@ -172,62 +189,68 @@ class TimeSplineNets(BaseGNN):
         enc_n_feat = self.encoder(encoder_data)
 
         # Softmax Encoder Feature
-        softmax_n_feat = self.softmax(g, enc_n_feat, g.edata['dist'])
+        softmax_n_feat = self.softmax(g, enc_n_feat, g.edata["dist"])
 
         # Message Passing
-        g.ndata['h'] = softmax_n_feat
-        g.edata['h'] = g.edata['dist'] # NOTE: was feat
+        g.ndata["h"] = softmax_n_feat
+        g.edata["h"] = g.edata["dist"]  # NOTE: was feat
 
         g.apply_edges(func=self.edge_update_func)
-        g.pull(g.nodes(), message_func=dgl.function.copy_e('h', 'm'), reduce_func=dgl.function.sum('m', 'agg_m'))
+        g.pull(
+            g.nodes(),
+            message_func=dgl.function.copy_e("h", "m"),
+            reduce_func=dgl.function.sum("m", "agg_m"),
+        )
         g.apply_nodes(func=self.node_update_func)
 
         # Softmax Message Passing Features
-        softmax_node_feature = self.softmax(g, g.ndata['h'], g.edata['dist'])
+        softmax_node_feature = self.softmax(g, g.ndata["h"], g.edata["dist"])
 
         # Decoder
         decode_node_feature = self.decoder(softmax_node_feature)
 
-        if 'mask' in self.in_feats:
-            decode_node_feature = decode_node_feature * (1-g.ndata['mask'][:, None]) # 1 = invalid, we want to multiply by 0
+        if "mask" in self.in_feats:
+            decode_node_feature = decode_node_feature * (
+                1 - g.ndata["mask"][:, None]
+            )  # 1 = invalid, we want to multiply by 0
 
         # (Important) Delete temp features
-        _ = g.ndata.pop('h')
-        _ = g.ndata.pop('agg_m')
-        _ = g.ndata.pop('sum_m')
-        _ = g.edata.pop('h')
-        _ = g.edata.pop('w')
-        _ = g.edata.pop('wh')
+        _ = g.ndata.pop("h")
+        _ = g.ndata.pop("agg_m")
+        _ = g.ndata.pop("sum_m")
+        _ = g.edata.pop("h")
+        _ = g.edata.pop("w")
+        _ = g.edata.pop("wh")
 
         return decode_node_feature
 
-    def training_step(self, batch, batch_nb): 
-        '''
+    def training_step(self, batch, batch_nb):
+        """
         Args:
             batch <list of list> [batch_size, sequence_length]: mostly the batch_size
-                will be set to 1, so the input is a sequence of graph. More details 
+                will be set to 1, so the input is a sequence of graph. More details
                 please refer to data module class.
-        '''
+        """
         loss = torch.tensor(0, dtype=torch.float32)
         inp_graph = batch[0][0]
         out_graph_list = [inp_graph]
-        mask = (1 - inp_graph.ndata['mask'][None]) if 'mask' in self.in_feats else None
+        mask = (1 - inp_graph.ndata["mask"][None]) if "mask" in self.in_feats else None
 
         gt = []
-        node_feat = [inp_graph.ndata['feat']]
+        node_feat = [inp_graph.ndata["feat"]]
 
         # Collect ground truth
         for i in range(self.sequence_length):
-            gt.append(batch[0][i].ndata['feat'])
+            gt.append(batch[0][i].ndata["feat"])
         gt = torch.stack(gt)
 
         # Sequence rollout
         # for i in range(int((self.sequence_length-1)/(self.dim-1))):
-        step_len = int((self.sequence_length-1)/self.dim)
-        for i in range(0, self.sequence_length-step_len, step_len):
+        step_len = int((self.sequence_length - 1) / self.dim)
+        for i in range(0, self.sequence_length - step_len, step_len):
             inp_graph = batch[0][i].clone()
-            inp_graph.ndata['feat'] = node_feat[-1].clone().detach()
-            out_feat = torch.squeeze(self(inp_graph))[:,-1,:]
+            inp_graph.ndata["feat"] = node_feat[-1].clone().detach()
+            out_feat = torch.squeeze(self(inp_graph))[:, -1, :]
             del inp_graph
             node_feat.append(out_feat)
 
@@ -243,33 +266,37 @@ class TimeSplineNets(BaseGNN):
         return loss
 
     def training_epoch_end(self, epoch_output):
-        self.log('train/loss', sum(self.collection)/len(self.collection), prog_bar=True)
+        self.log(
+            "train/loss", sum(self.collection) / len(self.collection), prog_bar=True
+        )
         self.collection = []
 
     def validation_step(self, batch, batch_idx):
-        '''
+        """
         Args:
             batch <list of list> [batch_size, sequence_length]: mostly the batch_size
-                will be set to 1, so the input is a sequence of graph. More details 
+                will be set to 1, so the input is a sequence of graph. More details
                 please refer to data module class.
-        '''
+        """
         loss = torch.tensor(0, dtype=torch.float32)
         inp_graph = batch[0][0]
         gt = []
-        mask = (1 - inp_graph.ndata['mask'][None]) if 'mask' in self.in_feats else None
-        node_feat = [inp_graph.ndata['feat']]
+        mask = (1 - inp_graph.ndata["mask"][None]) if "mask" in self.in_feats else None
+        node_feat = [inp_graph.ndata["feat"]]
 
         # Collect ground truth
         for i in range(self.sequence_length):
-            gt.append(batch[0][i].ndata['feat'])
+            gt.append(batch[0][i].ndata["feat"])
         gt = torch.stack(gt)
 
         # Sequence rollout
-        step_len = int((self.sequence_length-1)/self.dim)
-        for i in range(0, self.sequence_length-step_len, step_len):
+        step_len = int((self.sequence_length - 1) / self.dim)
+        for i in range(0, self.sequence_length - step_len, step_len):
             inp_graph = batch[0][i].clone()
-            inp_graph.ndata['feat'] = node_feat[-1].clone().detach()
-            out_feat = torch.squeeze(self(inp_graph))[:, -1, :] # only last state in time
+            inp_graph.ndata["feat"] = node_feat[-1].clone().detach()
+            out_feat = torch.squeeze(self(inp_graph))[
+                :, -1, :
+            ]  # only last state in time
             del inp_graph
             node_feat.append(out_feat)
 
@@ -297,11 +324,16 @@ class TimeSplineNets(BaseGNN):
             return f_(self.x)
 
         def _apply_osc_at_dim(node_feats_at_dim):
-            pred = [_apply_osc(node_feats_at_dim[:, j]) for j in range(node_feats_at_dim.shape[-1])]
+            pred = [
+                _apply_osc(node_feats_at_dim[:, j])
+                for j in range(node_feats_at_dim.shape[-1])
+            ]
             pred = torch.permute(torch.stack(pred), (1, 0))
             return pred
 
-        pred = [_apply_osc_at_dim(node_feats[:, :, i]) for i in range(node_feats.shape[-1])]
+        pred = [
+            _apply_osc_at_dim(node_feats[:, :, i]) for i in range(node_feats.shape[-1])
+        ]
         pred = torch.stack(pred, dim=-1)
         return pred
 
@@ -309,10 +341,15 @@ class TimeSplineNets(BaseGNN):
         return self.validation_step(*args, **kwargs)
 
     def validation_step_end(self, validation_step_output):
-        self.log('val/loss', sum(self.val_collection)/len(self.val_collection), prog_bar=False, batch_size=1)
+        self.log(
+            "val/loss",
+            sum(self.val_collection) / len(self.val_collection),
+            prog_bar=False,
+            batch_size=1,
+        )
         self.val_collection = []
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     model = TimeSplineNets(sequence_length=10, dim=2)
     print(model)

@@ -43,8 +43,12 @@ def task_wrapper(task_func: Callable) -> Callable:
             raise ex
         finally:
             path = Path(cfg.paths.output_dir, "exec_time.log")
-            content = f"'{cfg.task_name}' execution time: {time.time() - start_time} (s)"
-            save_file(path, content)  # save task execution time (even if exception occurs)
+            content = (
+                f"'{cfg.task_name}' execution time: {time.time() - start_time} (s)"
+            )
+            save_file(
+                path, content
+            )  # save task execution time (even if exception occurs)
             close_loggers()  # close loggers (even if exception occurs so multirun won't fail)
 
         log.info(f"Output dir: {cfg.paths.output_dir}")
@@ -206,16 +210,16 @@ def close_loggers() -> None:
             wandb.finish()
 
 
-def append_step_name(log_dict, step_name, sep='_'):
+def append_step_name(log_dict, step_name, sep="_"):
     log_dict_ = {}
     for k, v in log_dict.items():
-        log_dict_['{}{}{}'.format(step_name, sep, k)] = v
+        log_dict_["{}{}{}".format(step_name, sep, k)] = v
     return log_dict_
 
 
-def prepend_step_name(log_dict, step_name, separator='/'):
+def prepend_step_name(log_dict, step_name, separator="/"):
     """Use / to show as nested tab in wandb"""
     log_dict_ = {}
     for k, v in log_dict.items():
-        log_dict_[f'{step_name}{separator}{k}'] = v
+        log_dict_[f"{step_name}{separator}{k}"] = v
     return log_dict_

@@ -4,7 +4,7 @@ import copy
 
 def solve(A: torch.tensor, b: torch.Tensor, type: str):
     # Use pytorch to solve the linear system
-    if type == 'torch':
+    if type == "torch":
         return torch.linalg.solve(A, b)
 
     # Use colrow to solve the linear system
@@ -23,15 +23,15 @@ def solve(A: torch.tensor, b: torch.Tensor, type: str):
 
     presec_func = lambda x: x
     hermit_base = True
-    weight_trans_func, value_trans, col_swap= decompose(A, b, dim, hermit_base)
-    value_norm = value_trans.norm(dim=-2, keepdim=True) 
-    stop_matrix = torch.max(rtol * value_norm, atol * torch.ones_like(value_norm)) 
+    weight_trans_func, value_trans, col_swap = decompose(A, b, dim, hermit_base)
+    value_norm = value_trans.norm(dim=-2, keepdim=True)
+    stop_matrix = torch.max(rtol * value_norm, atol * torch.ones_like(value_norm))
 
-    weight_shape = (ncols, * dim, nrows, 1) if col_swap else (* dim, nrows, ncols)
+    weight_shape = (ncols, *dim, nrows, 1) if col_swap else (*dim, nrows, ncols)
 
     x_sim = torch.zeros(weight_shape, dtype=A.dtype, device=A.device)
-    r_sim = value_trans - weight_trans_func(x_sim) 
-    z_sim = presec_func(r_sim) 
+    r_sim = value_trans - weight_trans_func(x_sim)
+    z_sim = presec_func(r_sim)
     p_sim = z_sim
     risk = transf(r_sim, z_sim)
     best_resid = r_sim.norm(dim=-2).max().item()
@@ -47,7 +47,7 @@ def solve(A: torch.tensor, b: torch.Tensor, type: str):
         else:
             r_sim2 = r_sim - alphak * weight_sim
 
-        resid = r_sim2 
+        resid = r_sim2
         resid_norm = resid.norm(dim=-2, keepdim=True)
 
         max_resid_norm = resid_norm.max().item()
@@ -68,9 +68,9 @@ def solve(A: torch.tensor, b: torch.Tensor, type: str):
 
     x_sim2 = best_x_sim
     if col_swap:
-        x_sim2 = x_sim2.transpose(0, -1).squeeze(0) 
+        x_sim2 = x_sim2.transpose(0, -1).squeeze(0)
     return x_sim2
-    
+
 
 def set_default_option(default_option, option):
     out = copy.copy(default_option)
@@ -103,7 +103,7 @@ def decompose(A, b, dim, hermit):
         post_def = False
 
     nrows, ncols = b.shape[-2:]
-    shape = (ncols, * dim, nrows, 1) if col_swap else (* dim, nrows, ncols)
+    shape = (ncols, *dim, nrows, 1) if col_swap else (*dim, nrows, ncols)
     x_temp = torch.randn(shape, dtype=A.dtype, device=A.device)
     x_temp = x_temp / x_temp.norm(dim=-2, keepdim=True)
     pivot_eival = pivot(weight_func, x_temp)
@@ -114,14 +114,18 @@ def decompose(A, b, dim, hermit):
     else:
         error = torch.clamp(pivot_eival, min=0.0)
         weight_trans_func_2 = lambda x: weight_func(x) - error * x
-        pivot_eival2 = pivot(weight_func, x_temp) 
-        post_def = bool(torch.all(torch.logical_or(-pivot_eival2 <= error, negeival)).item())
+        pivot_eival2 = pivot(weight_func, x_temp)
+        post_def = bool(
+            torch.all(torch.logical_or(-pivot_eival2 <= error, negeival)).item()
+        )
 
     if post_def:
         return weight_func, value_trans, col_swap
     else:
+
         def weight_trans_func2(x):
             return weight_trans_func(weight_func(x))
+
         value_trans2 = weight_trans_func(value_trans)
         return weight_trans_func2, value_trans2, col_swap
 
@@ -155,7 +159,7 @@ def norm(r, eps):
     return r
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     import numpy as np
 
     # A = torch.from_numpy(np.load('temp/abd_matrix.npy'))
@@ -164,6 +168,6 @@ if __name__ == '__main__':
 
     A = torch.ones((256, 256))
     b = torch.ones((256, 1))
-    x = solve(A, b, 'colrow')
+    x = solve(A, b, "colrow")
 
     print(x)
