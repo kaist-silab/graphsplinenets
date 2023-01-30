@@ -1,0 +1,2 @@
+# @package hydra.launcher
+_target_: hydra_plugins.hydra_ray.ray_launcher.RayLauncher

@@ -1,0 +1,3 @@
+_target_: src.datamodules.pde.Gaussian2DOverfitting
+batch_size: 16
+num_workers: 10

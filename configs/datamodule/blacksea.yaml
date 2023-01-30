@@ -1,0 +1,5 @@
+_target_: src.datamodules.black_sea.BlackSeaSequence
+data_dir: ${paths.data_dir}/black_sea/graphs
+sequence_length: 7
+batch_size: 16
+num_workers: 10

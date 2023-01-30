@@ -2,8 +2,8 @@ import torch
 import numpy as np
 import sys; sys.path.append('.')
 from itertools import product
-from src.collocation import collocation1d, collocation2d
-from src.base import bd0, bd1, ce0, ce1
+from src.numerics.collocation import collocation1d, collocation2d
+from src.numerics.base import bd0, bd1, ce0, ce1
 
 
 class osc1d(object):
@@ -210,3 +210,125 @@ class osc2d(object):
             base_list.append(ce1(x[i-1], x[i], x[i+1], self.device))
         base_list.append(bd1(x[-2], x[-1], self.device))
         return base_list
+
+
+if __name__ == '__main__':
+    import time
+    import matplotlib.pyplot as plt
+    case = '2d'
+
+    if case == '1d':
+        n = 3
+        r = 3
+        b1 = 0
+        b2 = 0
+        f = lambda x: 10 * x ** 3 + 14 * x ** 2 + 34 * x - 26
+        u = lambda x: 10 * x ** 3 - 16 * x ** 2 + 6 * x
+
+        # Generate partition and collocation
+        p, c = collocation1d(n, r)
+        y = torch.tensor(u(c), dtype=torch.float32)
+        y.requires_grad_()
+        
+        # Collocation
+        f_ = osc1d(p, c, y, b1, b2)
+        
+        # Get prediction value 
+        x = torch.linspace(0, 1, 256)
+        gt = u(x)
+        pred = f_(x)
+
+        # Print loss
+        loss = torch.sum((gt - pred) ** 2)
+        loss.backward()
+        print(loss)
+        print(y.grad)
+
+    elif case == '2d':
+        nx = 4
+        ny = 4
+        dx = 1/nx
+        dy = 1/ny
+        sim_x = 256
+        sim_y = 256
+        r = 3
+        u = lambda x, y: 10 * (x ** 2 * y**2 - x ** 2 * y - x * y ** 2 + x * y)
+        
+        # Prepare for the base
+        start = time.process_time()
+        x = torch.linspace(0, 1, sim_x)
+        split_x = int(sim_x / nx)
+        sx = []
+        for i in range(nx+1):
+            sx.append(torch.ones(split_x) * i / nx)
+
+        px_l0 = torch.cat(sx[:nx])
+        px_l1 = torch.cat(sx[1:])
+        px_l2 = torch.cat(sx[2:]+sx[-1:])
+
+        px_r0 = torch.cat(sx[:1]+sx[:nx-1])
+        px_r1 = px_l0
+        px_r2 = px_l1
+
+        base_xl0 = (dx + 2 * (px_l1 - x)) * (x - px_l0) ** 2 / dx ** 3
+        base_xr0 = (dx + 2 * (x - px_r1)) * (px_r2 - x) ** 2 / dx ** 3
+        base_xl1 = (x - px_l1) * (x - px_l0) ** 2 / dx ** 2
+        base_xr1 = (x - px_r1) * (px_r2 - x) ** 2 / dx ** 2
+
+        base_start = torch.cat((x[:split_x] * (sx[1] - x[:split_x]) ** 2 / dx ** 2, torch.zeros(sim_x - split_x)))
+        base_end = torch.cat((torch.zeros(sim_x - split_x), (x[-split_x:] - sx[-1]) * (x[-split_x:] - sx[-2]) ** 2 / dx ** 2))
+        base_list = [base_start]
+        for i in range(nx-1):
+            base0 = torch.cat((
+                torch.zeros(i*split_x), 
+                base_xl0[i*split_x:(i+1)*split_x], 
+                base_xr0[i*split_x:(i+1)*split_x], 
+                torch.zeros((nx-2-i)*split_x)))
+            base1 = torch.cat((
+                torch.zeros(i*split_x), 
+                base_xl1[i*split_x:(i+1)*split_x], 
+                base_xr1[i*split_x:(i+1)*split_x], 
+                torch.zeros((nx-2-i)*split_x)))
+            base_list.append(base0)
+            base_list.append(base1)
+        base_list.append(base_end)
+        base_x = torch.stack(base_list, dim=0)
+
+        # If y has the same partition as x
+        base_y = base_x
+        base = torch.einsum('ij,kl->ikjl', base_x, base_y).to('cuda:0')
+        checkpoint = time.process_time()
+        print(f'Calculate Base Time: {checkpoint - start}')
+
+        # Generate partition and collocation
+        p, c = collocation2d(nx, ny, r)
+        p = torch.tensor(p)
+        c = torch.tensor(c)
+        z = torch.zeros(c.size()[:-1], dtype=torch.float32)
+        for x_part, y_part, x_coll, y_coll in product(range(nx), range(ny), range(r-1), range(r-1)):
+            z[x_part, y_part, x_coll, y_coll] = u(c[x_part, y_part, x_coll, y_coll, 0], c[x_part, y_part, x_coll, y_coll, 1])
+        z.requires_grad_()
+
+        # Collocation
+        checkpoint = time.process_time()
+        f_ = osc2d(p, c, z, 'cuda:0')
+        print(f'Sovling Time: {time.process_time() - checkpoint}')
+
+        # Get prediction value
+        gt = u(torch.linspace(0, 1, sim_x), torch.linspace(0, 1, sim_y)).to('cuda:0')
+        checkpoint = time.process_time()
+        pred = f_(base)
+        print(f'Simulate Time: {time.process_time() - checkpoint}')
+
+        # Print loss
+        loss = torch.sum((gt - pred) ** 2)
+        checkpoint = time.process_time()
+        loss.backward()
+        print(f'Backward Time: {time.process_time() - checkpoint}')
+        print(loss)
+        print(z.grad)
+        # plt.matshow(gt.to('cpu').detach().numpy())
+        # plt.savefig('gt.png')
+        plt.matshow(pred.to('cpu').detach().numpy())
+        plt.savefig('pred.png')
+

@@ -1,0 +1,4 @@
+# @package train.optimizer
+_target_: torch.optim.Adam
+lr: 1e-3
+weight_decay: 0.0
