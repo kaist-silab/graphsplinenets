@@ -40,7 +40,7 @@ class osc1d(object):
                 x_part = x[torch.logical_and(x >= self.p[i], x <= self.p[i + 1])]
             y = torch.zeros(len(x_part)).to(self.device)
             for j in range(self.r + 1):
-                y += self.para[i * (self.r + 1) + j] * x_part ** j
+                y += self.para[i * (self.r + 1) + j] * x_part**j
             result = torch.cat((result, y))
         return result
 
@@ -117,13 +117,13 @@ class osc1d(object):
         # Previous Polynomial
         poly_idx = (k - 1) * (r + 1)
         for i in range(r + 1):
-            value[poly_idx + i] = x ** i
+            value[poly_idx + i] = x**i
             dev[poly_idx + i] = i * x ** (i - 1)
 
         # Next Polynomial
         poly_idx = k * (r + 1)
         for i in range(r + 1):
-            value[poly_idx + i] = -(x ** i)
+            value[poly_idx + i] = -(x**i)
             dev[poly_idx + i] = -i * x ** (i - 1)
         return value, dev
 
@@ -143,12 +143,12 @@ class osc1d(object):
         # Left Boundary Condition
         idx = 0
         for i in range(r + 1):
-            left[i] = 0 ** i
+            left[i] = 0**i
 
         # Right Boundary Condition
         idx = (n - 1) * (r + 1)
         for i in range(r + 1):
-            right[idx + i] = 1 ** i
+            right[idx + i] = 1**i
         return left, right
 
 
@@ -240,8 +240,8 @@ if __name__ == "__main__":
         r = 3
         b1 = 0
         b2 = 0
-        f = lambda x: 10 * x ** 3 + 14 * x ** 2 + 34 * x - 26
-        u = lambda x: 10 * x ** 3 - 16 * x ** 2 + 6 * x
+        f = lambda x: 10 * x**3 + 14 * x**2 + 34 * x - 26
+        u = lambda x: 10 * x**3 - 16 * x**2 + 6 * x
 
         # Generate partition and collocation
         p, c = collocation1d(n, r)
@@ -270,7 +270,7 @@ if __name__ == "__main__":
         sim_x = 256
         sim_y = 256
         r = 3
-        u = lambda x, y: 10 * (x ** 2 * y ** 2 - x ** 2 * y - x * y ** 2 + x * y)
+        u = lambda x, y: 10 * (x**2 * y**2 - x**2 * y - x * y**2 + x * y)
 
         # Prepare for the base
         start = time.process_time()
@@ -288,21 +288,21 @@ if __name__ == "__main__":
         px_r1 = px_l0
         px_r2 = px_l1
 
-        base_xl0 = (dx + 2 * (px_l1 - x)) * (x - px_l0) ** 2 / dx ** 3
-        base_xr0 = (dx + 2 * (x - px_r1)) * (px_r2 - x) ** 2 / dx ** 3
-        base_xl1 = (x - px_l1) * (x - px_l0) ** 2 / dx ** 2
-        base_xr1 = (x - px_r1) * (px_r2 - x) ** 2 / dx ** 2
+        base_xl0 = (dx + 2 * (px_l1 - x)) * (x - px_l0) ** 2 / dx**3
+        base_xr0 = (dx + 2 * (x - px_r1)) * (px_r2 - x) ** 2 / dx**3
+        base_xl1 = (x - px_l1) * (x - px_l0) ** 2 / dx**2
+        base_xr1 = (x - px_r1) * (px_r2 - x) ** 2 / dx**2
 
         base_start = torch.cat(
             (
-                x[:split_x] * (sx[1] - x[:split_x]) ** 2 / dx ** 2,
+                x[:split_x] * (sx[1] - x[:split_x]) ** 2 / dx**2,
                 torch.zeros(sim_x - split_x),
             )
         )
         base_end = torch.cat(
             (
                 torch.zeros(sim_x - split_x),
-                (x[-split_x:] - sx[-1]) * (x[-split_x:] - sx[-2]) ** 2 / dx ** 2,
+                (x[-split_x:] - sx[-1]) * (x[-split_x:] - sx[-2]) ** 2 / dx**2,
             )
         )
         base_list = [base_start]

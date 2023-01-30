@@ -11,7 +11,7 @@ class bd0:
 
     def f(self, x):
         if x >= self.x1 and x <= self.x2:
-            return (x - self.x1) * (self.x2 - x) ** 2 / self.dx ** 2
+            return (x - self.x1) * (self.x2 - x) ** 2 / self.dx**2
         else:
             return 0
 
@@ -26,7 +26,7 @@ class bd1:
 
     def f(self, x):
         if x >= self.x1 and x <= self.x2:
-            return (x - self.x2) * (x - self.x1) ** 2 / self.dx ** 2
+            return (x - self.x2) * (x - self.x1) ** 2 / self.dx**2
         else:
             return 0
 
@@ -43,9 +43,9 @@ class ce0:
 
     def f(self, x):
         if x >= self.x0 and x <= self.x1:
-            return (self.dx1 + 2 * (self.x1 - x)) * (x - self.x0) ** 2 / self.dx1 ** 3
+            return (self.dx1 + 2 * (self.x1 - x)) * (x - self.x0) ** 2 / self.dx1**3
         elif x >= self.x1 and x <= self.x2:
-            return (self.dx2 + 2 * (x - self.x1)) * (self.x2 - x) ** 2 / self.dx2 ** 3
+            return (self.dx2 + 2 * (x - self.x1)) * (self.x2 - x) ** 2 / self.dx2**3
         else:
             return 0
 
@@ -62,8 +62,8 @@ class ce1:
 
     def f(self, x):
         if x >= self.x0 and x <= self.x1:
-            return (x - self.x1) * (x - self.x0) ** 2 / self.dx1 ** 2
+            return (x - self.x1) * (x - self.x0) ** 2 / self.dx1**2
         elif x >= self.x1 and x <= self.x2:
-            return (x - self.x1) * (self.x2 - x) ** 2 / self.dx2 ** 2
+            return (x - self.x1) * (self.x2 - x) ** 2 / self.dx2**2
         else:
             return 0
