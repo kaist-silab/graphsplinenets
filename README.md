@@ -20,9 +20,9 @@ GraphSplineNets code based on the [Lightning Hydra Template](https://github.com/
 ### Clone repository
 First, download the [repository on Anonymous Github](https://anonymous.4open.science/r/graphsplinenets) by running this on a terminal:
 ```bash
-curl -sSL https://anonymous.4open.science/r/graphsplinenets/utils/download_anonymous_github.py | python3 -
+curl -sSL https://anonymous.4open.science/r/graphsplinenets/src/utils/download_anonymous_github.py | python3 -
 ```
-or use the [downloader script](https://anonymous.4open.science/r/graphsplinenets/utils/download_anonymous_github.py)  and run it with your favorite Python interpreter. Note that we use the above since Anonymous Github is currently not providing a way to download the repository as a zip file.
+or use the [downloader script](https://anonymous.4open.science/r/graphsplinenets/src/utils/download_anonymous_github.py)  and run it with your favorite Python interpreter. Note that we use the above since Anonymous Github is currently not providing a way to download the repository as a zip file.
 
 
 ### Install dependencies
