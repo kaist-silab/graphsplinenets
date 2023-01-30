@@ -9,29 +9,29 @@
 
 </div>
 
+
+
 ## Description
 
 GraphSplineNets code based on the [Lightning Hydra Template](https://github.com/ashleve/lightning-hydra-template)
 
 ## How to run
 
-Install dependencies
-
+### Clone repository
+First, download the [repository on Anonymous Github](https://anonymous.4open.science/r/graphsplinenets) by running this on a terminal:
 ```bash
-# clone project
-git clone https://github.com/cbhua/model-graph-spline-nets
-cd your-repo-name
-
-# [OPTIONAL] create conda environment
-conda create -n myenv python=3.9
-conda activate myenv
-
-# install pytorch according to instructions
-# https://pytorch.org/get-started/
-
-# install requirements
-pip install -r requirements.txt
+curl -sSL https://anonymous.4open.science/r/graphsplinenets/utils/download_anonymous_github.py | python3 -
 ```
+or download the [downloader script](`https://anonymous.4open.science/r/graphsplinenets/utils/download_anonymous_github.py`)  and run it with your favorite )Python interpreter.
+
+
+### Install dependencies
+```bash
+# Automatically install dependencies with light the torch
+pip install light-the-torch && python3 -m light_the_torch install --upgrade -r requirements.txt
+```
+
+The above script will [automatically install](https://github.com/pmeier/light-the-torch) PyTorch with the right GPU version for your system. Alternatively, you can use `pip install -r requirements.txt`
 
 ## Quick Start
 
