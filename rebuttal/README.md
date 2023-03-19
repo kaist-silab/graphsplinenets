@@ -9,7 +9,7 @@ The Black Sea dataset is composed of daily real-world measurements of ocean curr
 
 
 <div align="center">
-    <img src="assets/blacksea-meshing.png"/>
+    <img src="https://anonymous.4open.science/r/graphsplinenets/rebuttal/assets/blacksea-meshing.png"/>
 </div>
 
 
@@ -31,7 +31,7 @@ The following table includes results from 3 training runs with different seeds:
 The following figure illustrates qualitative results from different models on the test set:
 
 <div align="center">
-    <img src="assets/blacksea-main.png" />
+    <img src="https://anonymous.4open.science/r/graphsplinenets/rebuttal/assets/blacksea-main.png" />
 </div>
 
 We can see that our proposed GraphSplineNets model outperforms all other baselines, demonstrating its ability to handle irregularly-shaped objects and improve accuracy in predictions of complex physical systems on unstructured meshes with irregularly-shaped objects. 
