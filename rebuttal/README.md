@@ -5,7 +5,7 @@
 We include in this file the additional experimental details for the new Black Sea forecasting dataset.
 
 ### Dataset Details
-The Black Sea dataset is composed of daily real-world measurements of ocean currents. The resolution of the raw data is 1/27° x 1/36°. We employ data starting from 01/01/2012 until 01/01/2020; we split training, validation and testing with ratios of 5:1:1 as in the other datasets in the paper sequentially on the temporal axis; i.e., so that the model has not seen data from 2018 or 2019 during training. Of the datapoints in the grids, less than 50% actually cover the Black Sea due to the irregular shape of the sea. To obtain a mesh, we subsample the grid using Delaunay triangulation to $5000$ nodes for baselines and $1000$ nodes for GraphSplineNets, which result in a non-uniform mesh with an irregularly-shaped boundary. We can observe a detail of the meshing alongide GraphSplineNets results in the figure below:
+The Black Sea dataset is composed of daily real-world measurements of ocean currents. The resolution of the raw data is 1/27° x 1/36°. We employ data starting from 01/01/2012 until 01/01/2020; we split training, validation and testing with ratios of 5:1:1 as in the other datasets in the paper sequentially on the temporal axis; i.e., so that the model has not seen data from 2018 or 2019 during training. Of the datapoints in the grids, less than 50% actually cover the Black Sea due to the irregular shape of the sea. To obtain a mesh, we subsample the grid using Delaunay triangulation to 5000 nodes for baselines and 1000 nodes for GraphSplineNets, which result in a non-uniform mesh with an irregularly-shaped boundary. We can observe a detail of the meshing alongide GraphSplineNets results in the figure below:
 
 
 <div align="center">
@@ -25,8 +25,8 @@ The following table includes results from 3 training runs with different seeds:
 
 | Metric | GCN | GCN+MLP | GEN | MGN | MGN+OSC(Post) | MGN+OSC | MGN+OSC+Adaptive |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| MSE ($\times10^{-1}$) | $7.73 \pm 0.28$ | $7.12 \pm 0.35$ | $6.22 \pm 0.31$ | $6.41 \pm 0.42$ | $4.37 \pm 0.33$ | $4.23 \pm 0.17$ | $3.91 \pm 0.27$ |
-| Runtime [s] | $8.27 \pm 0.33$ | $8.11 \pm 0.28$ | $12.81 \pm 0.19$ | $13.35 \pm 0.27$ | $5.87 \pm 0.13$ | $5.13 \pm 0.21$ | $5.79 \pm 0.15$ |
+| MSE ($$\times10^{-1}$$) | $$7.73 \pm 0.28$$ | $$7.12 \pm 0.35$$ | $$6.22 \pm 0.31$$ | $$6.41 \pm 0.42$$ | $$4.37 \pm 0.33$$ | $$4.23 \pm 0.17$$ | $$3.91 \pm 0.27$$ |
+| Runtime [s] | $$8.27 \pm 0.33$$ | $$8.11 \pm 0.28$$ | $$12.81 \pm 0.19$$ | $$13.35 \pm 0.27$$ | $$5.87 \pm 0.13$$ | $$5.13 \pm 0.21$$ | $$5.79 \pm 0.15$$ |
 
 The following figure illustrates qualitative results from different models on the test set:
 
