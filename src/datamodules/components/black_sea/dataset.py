@@ -54,7 +54,6 @@ class BlackSeaDataset(Dataset):
         f32=True,
         download=True,
     ):
-
         # manager = BlackSeaManager(data_path, files, download=download)
         # if files is None: # provide a list of files to load
         #     files = manager.get_filepaths()
