@@ -24,7 +24,6 @@ log = pylogger.get_pylogger(__name__)
 
 @hydra.main(version_base="1.2", config_path=root / "configs", config_name="train.yaml")
 def main(cfg: DictConfig) -> float:
-
     # We want to add fields to config so need to call OmegaConf.set_struct
     OmegaConf.set_struct(cfg, False)
 
