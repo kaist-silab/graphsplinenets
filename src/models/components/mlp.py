@@ -20,7 +20,6 @@ class MLP(nn.Module):
         output_norm: str = "none",
         bias: bool = True,
     ):
-
         super().__init__()
         assert input_norm in ["batch", "layer", "none"]
         assert output_norm in ["batch", "layer", "none"]
