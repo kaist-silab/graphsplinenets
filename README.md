@@ -2,37 +2,24 @@
 
 # GraphSplineNets
 
-<a href="https://pytorch.org/get-started/locally/"><img alt="PyTorch" src="https://img.shields.io/badge/PyTorch-ee4c2c?logo=pytorch&logoColor=white"></a>
-<a href="https://pytorchlightning.ai/"><img alt="Lightning" src="https://img.shields.io/badge/-Lightning-792ee5?logo=pytorchlightning&logoColor=white"></a>
-<a href="https://hydra.cc/"><img alt="Config: Hydra" src="https://img.shields.io/badge/Config-Hydra-89b8cd"></a>
-<a href="https://github.com/ashleve/lightning-hydra-template"><img alt="Template" src="https://img.shields.io/badge/-Lightning--Hydra--Template-017F2F?style=flat&logo=github&labelColor=gray"></a><br>
+[![arXiv](https://img.shields.io/badge/arXiv-2310.16397-b31b1b.svg)](https://arxiv.org/abs/2310.16397) [![OpenReview](https://img.shields.io/badge/⚖️-OpenReview-8b1b16)](https://openreview.net/forum?id=MGPST5I9DO) 
+[![License: MIT](https://img.shields.io/badge/License-MIT-red.svg)](https://opensource.org/licenses/MIT)
 
 </div>
 
-> Repository has work in progress - Arxiv paper, OpenReview, and final touches coming soon!
+![graphsplinenets](https://github.com/user-attachments/assets/1d3a2018-c588-4b19-9b82-553e47f1b1eb)
 
 
-## Description
+## Abstract
 
-GraphSplineNets code based on the [Lightning Hydra Template](https://github.com/ashleve/lightning-hydra-template)
+While complex simulations of physical systems have been widely used in engineering and scientific computing, lowering their often prohibitive computational requirements has only recently been tackled by deep learning approaches. In this paper, we present GraphSplineNets, a novel deep-learning method to speed up the forecasting of physical systems by reducing the grid size and number of iteration steps of deep surrogate models. Our method uses two differentiable orthogonal spline collocation methods to efficiently predict response at any location in time and space. Additionally, we introduce an adaptive collocation strategy in space to prioritize sampling from the most important regions. GraphSplineNets improve the accuracy-speedup tradeoff in forecasting various dynamical systems with increasing complexity, including the heat equation, damped wave propagation, Navier-Stokes equations, and real-world ocean currents in both regular and irregular domains.
+
 
 ## How to run
 
-### Clone repository
-First, download the [repository on Anonymous Github](https://anonymous.4open.science/r/graphsplinenets) by running this on a terminal:
-```bash
-curl -sSL https://anonymous.4open.science/r/graphsplinenets/src/utils/download_anonymous_github.py | python3 -
-```
-or use the [downloader script](https://anonymous.4open.science/r/graphsplinenets/src/utils/download_anonymous_github.py)  and run it with your favorite Python interpreter. Note that we use the above since Anonymous Github is currently not providing a way to download the repository as a zip file.
+### Installation
 
-
-### Install dependencies
-```bash
-# Automatically install dependencies with light the torch
-pip install light-the-torch && python3 -m light_the_torch install --upgrade -r requirements.txt
-```
-
-The above script will [automatically install](https://github.com/pmeier/light-the-torch) PyTorch with the right GPU version for your system. Alternatively, you can use `pip install -r requirements.txt`
+`pip install -r requirements.txt`
 
 ## Quick Start
 
@@ -61,3 +48,18 @@ You can override any parameter from command line like this
 ```bash
 python run.py trainer.max_epochs=20 datamodule.batch_size=64
 ```
+
+## Citation
+
+If you find our work useful, please consider citing us:
+
+```text
+@article{hua2024learning_graphsplinenets,
+  title={Learning Efficient Surrogate Dynamic Models with Graph Spline Networks},
+  author={Hua, Chuanbo and Berto, Federico and Poli, Michael and Massaroli, Stefano and Park, Jinkyoo},
+  journal={Advances in Neural Information Processing Systems},
+  volume={36},
+  year={2024}
+}
+```
+
